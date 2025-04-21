@@ -2,6 +2,8 @@ import pygame
 from sys import exit
 
 pygame.init()
+pygame.mixer.init()
+
 screen = pygame.display.set_mode((300, 300))
 pygame.display.set_caption("Batalha Naval")
 
@@ -11,6 +13,17 @@ grid_fundo = pygame.image.load("Naval Battle Assets/Naval Battle Assets/oceangri
 grid_fundo = pygame.transform.scale(grid_fundo, (300, 300))
 font = pygame.font.Font("font/Pixeltype.ttf", 20)
 
+explosion_sound = pygame.mixer.Sound("sons_batalha/explosion-47163.mp3")
+splash_sound = pygame.mixer.Sound("sons_batalha/splash-by-blaukreuz-6261.mp3")
+start_sound = pygame.mixer.Sound("sons_batalha/game-start-6104.mp3") 
+win_sound = pygame.mixer.Sound("sons_batalha/goodresult-82807.mp3")
+win_sound.set_volume(0.1)
+select_barco = pygame.mixer.Sound("sons_batalha/Metal-Click.mp3")
+fundo_sound = pygame.mixer.Sound("sons_batalha/som_intro.mp3")
+fundo_sound.set_volume(0.1)
+fundo_sound.play(loops=-1)
+
+win_sound_played = False
 
 clock = pygame.time.Clock()
 tela = "menu"
@@ -78,9 +91,6 @@ frota_jogador2 = [
     {"tamanho": 1, "horizontal": True, "posicoes": [], "cor": (0, 255, 40)},
     {"tamanho": 1, "horizontal": True, "posicoes": [], "cor": (0, 255, 20)}
 ]
-
-
-#modo_posicionamento = "selecionar"#
 
 # Posições dos textos
 TEXTO_TOPO_Y = 10
@@ -190,7 +200,7 @@ def desenhar_tela_batalha(jogador_atual):
         screen.blit(bomba_alvo_img, (x, y))
     
     # Desenha instruções
-    texto_jogador = font.render(f"JOGADOR {jogador_atual} ATIRANDO", True, (255, 255, 0))
+    texto_jogador = font.render(f"JOGADOR {jogador_atual} ATIRANDO", True, (255, 0, 0))
     screen.blit(texto_jogador, (100, TEXTO_TOPO_Y + 20))
     
     screen.blit(font.render("Clique: Atirar", True, (200, 200, 200)), 
@@ -212,7 +222,7 @@ def processar_tiro(row, col, jogador_atual):
     if grade_alvo[row][col] == 1:
         tiros[row][col] = 2  # Acerto
         jogador_acertou = True
-        
+        explosion_sound.play()
         # Verifica se afundou um navio completo
         frota_alvo = frota_jogador2 if jogador_atual == 1 else frota_jogador1
         for navio in frota_alvo:
@@ -229,7 +239,7 @@ def processar_tiro(row, col, jogador_atual):
         tiros[row][col] = 1  # Água
         jogador_acertou = False
         vez_do_jogador = 2 if jogador_atual == 1 else 1  # Alterna jogador
-
+        splash_sound.play()
 
 while True:
     for event in pygame.event.get():
@@ -239,9 +249,11 @@ while True:
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if tela == "menu" and botao_comecar.collidepoint(event.pos):
+                start_sound.play()
                 tela = "jogo"
                 navio_selecionado = frota_jogador1[navio_atual_idx]
             elif tela == "jogo" and posicionando_navios:
+                select_barco.play()
                 if event.button == 1:  # Clique esquerdo
                     posicao = get_clique_posicionamento(event.pos[0], event.pos[1])
                     if posicao and navio_selecionado:
@@ -318,14 +330,13 @@ while True:
 
     # Texto no topo - indicação do jogador (amarelo)
         texto_jogador = font.render(f"JOGADOR {vez_do_jogador}", True, (255, 255, 0))
-        screen.blit(texto_jogador, (120, TEXTO_TOPO_Y + 20))
+        screen.blit(texto_jogador, (120, TEXTO_TOPO_Y + 10))
 
     # Texto na base - instruções (cinza claro)
         cor_instrucoes = (200, 200, 200)
         screen.blit(font.render("Clique: Selecionar", True, cor_instrucoes), 
                (30, TEXTO_BAIXO_Y + 10))
-        screen.blit(font.render("Botão Direito: Girar", True, cor_instrucoes), 
-               (30, TEXTO_BAIXO_Y + 30))
+        
     
     elif tela == "batalha":
         # Desenha o fundo e os tiros já realizados
@@ -352,7 +363,7 @@ while True:
     
         # Texto no topo - indicação do jogador (amarelo)
         texto_jogador = font.render(f"JOGADOR {vez_do_jogador} ATIRANDO", True, (255, 255, 0))
-        screen.blit(texto_jogador, (90, TEXTO_TOPO_Y + 20))
+        screen.blit(texto_jogador, (90, TEXTO_TOPO_Y + 10))
     
         # Texto na base - instruções (cinza claro)
         cor_instrucoes = (200, 200, 200)
@@ -360,6 +371,11 @@ while True:
                    (30, TEXTO_BAIXO_Y + 10))
     
     elif tela == "fim":
+        if not win_sound_played:
+            fundo_sound.stop()  # opcional: para parar o som de fundo
+            win_sound.play()
+            win_sound_played = True
+        
         screen.fill((0, 0, 0))
         texto = font.render(f"JOGADOR {vencedor} VENCEU!", True, (255, 255, 0))
         screen.blit(texto, (100, 150))
