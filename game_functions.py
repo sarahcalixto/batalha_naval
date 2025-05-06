@@ -1,4 +1,3 @@
-# game_functions.py
 import pygame
 from config import *
 
@@ -22,32 +21,26 @@ def posicao_valida(navio, row, col, grade):
     if row < 1 or col < 1:
         return False
     
-    if navio["horizontal"]:
-        if col + navio["tamanho"] - 1 > GRID_PLAYABLE_SIZE:
+    
+    if col + navio["tamanho"] - 1 > GRID_PLAYABLE_SIZE:
+        return False
+    for i in range(navio["tamanho"]):
+        if grade[row][col + i] != 0:
             return False
-        for i in range(navio["tamanho"]):
-            if grade[row][col + i] != 0:
-                return False
-    else:
-        if row + navio["tamanho"] - 1 > GRID_PLAYABLE_SIZE:
-            return False
-        for i in range(navio["tamanho"]):
-            if grade[row + i][col] != 0:
-                return False
+    
     return True
 
 def atualizar_posicoes_navio(navio, row, col, grade):
    
-    navio["posicoes"] = []
+    navio["posicoes"] = [] 
     for i in range(navio["tamanho"]):
-        if navio["horizontal"]:
-            navio["posicoes"].append((row, col + i))
-        else:
-            navio["posicoes"].append((row + i, col))
-    
+        navio["posicoes"].append((row, col + i))
+        
     for r, c in navio["posicoes"]:
         if 1 <= r <= GRID_PLAYABLE_SIZE and 1 <= c <= GRID_PLAYABLE_SIZE:
             grade[r][c] = 1
+
+
 
 def get_clique_posicionamento(mouse_x, mouse_y):
    
@@ -57,6 +50,7 @@ def get_clique_posicionamento(mouse_x, mouse_y):
     if 1 <= col <= GRID_PLAYABLE_SIZE and 1 <= row <= GRID_PLAYABLE_SIZE:
         return row, col
     return None
+
 
 def desenhar_navios(screen, frota, navio_selecionado=None, posicao_mouse=None, grade=None):
     
@@ -73,13 +67,9 @@ def desenhar_navios(screen, frota, navio_selecionado=None, posicao_mouse=None, g
         cor = navio_selecionado["cor"] if valido else COR_NAVIO_INVALIDO
 
         for i in range(navio_selecionado["tamanho"]):
-            if navio_selecionado["horizontal"]:
-                c = col + i
-                r = row
-            else:
-                r = row + i
-                c = col
-            
+            c = col + i
+            r = row
+           
             if 1 <= r <= GRID_PLAYABLE_SIZE and 1 <= c <= GRID_PLAYABLE_SIZE:
                 x = OFFSET_X + (c - 1) * TAMANHO_CELULA
                 y = OFFSET_Y + (r - 1) * TAMANHO_CELULA

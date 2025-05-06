@@ -1,4 +1,3 @@
-# main.py
 import pygame
 from sys import exit
 from config import *
@@ -98,10 +97,7 @@ def main():
                                         jogo['tela'] = BATALHA
                                         jogo['jogador_acertou'] = False
 
-                    elif event.button == 3:  
-                        if jogo['navio_selecionado']:
-                            jogo['navio_selecionado']['horizontal'] = not jogo['navio_selecionado']['horizontal']
-                
+                    
                 elif jogo['tela'] == BATALHA:
                     if event.button == 1 and jogo['posicao_mouse_batalha']:  
                         row, col = jogo['posicao_mouse_batalha']
